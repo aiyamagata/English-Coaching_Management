@@ -108,3 +108,12 @@ temp/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
+
+# Personal data and analysis files
+student_data_analysis.md
+scripts/seed-students.mjs
+gantt_chart_screenshot.md
+
+# Manus logs and runtime
+.manus-logs/
+.manus/
