@@ -32,7 +32,7 @@ function createAuthContext(): { ctx: TrpcContext } {
 }
 
 describe("students router", () => {
-  it("should create a student", async () => {
+  it("should create a student with support and guarantee deadlines", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
@@ -40,6 +40,8 @@ describe("students router", () => {
       name: "山田太郎",
       startDate: "2026-01-01",
       endDate: "2026-06-30",
+      supportDeadline: "2026-04-01",
+      guaranteeDeadline: "2026-06-30",
       memo: "初級コース",
     });
 

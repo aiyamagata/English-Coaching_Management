@@ -12,6 +12,21 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
+// 日付を「〇〇年〇〇月〇〇日」形式に変換するヘルパー
+function formatDateJP(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  // "YYYY-MM-DD" 形式の文字列をパース（タイムゾーン問題を避けるため文字列分割）
+  const str = String(dateStr);
+  const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[1]}年${parseInt(match[2])}月${parseInt(match[3])}日`;
+  }
+  // フォールバック：Dateオブジェクト経由
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
 export default function StudentList() {
   const { user, loading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
@@ -63,6 +78,8 @@ export default function StudentList() {
       name: formData.get("name") as string,
       startDate: formData.get("startDate") as string,
       endDate: formData.get("endDate") as string || undefined,
+      supportDeadline: formData.get("supportDeadline") as string || undefined,
+      guaranteeDeadline: formData.get("guaranteeDeadline") as string || undefined,
       memo: formData.get("memo") as string || undefined,
     });
   };
@@ -75,6 +92,8 @@ export default function StudentList() {
       name: formData.get("name") as string,
       startDate: formData.get("startDate") as string,
       endDate: formData.get("endDate") as string || undefined,
+      supportDeadline: formData.get("supportDeadline") as string || undefined,
+      guaranteeDeadline: formData.get("guaranteeDeadline") as string || undefined,
       memo: formData.get("memo") as string || undefined,
     });
   };
@@ -150,7 +169,7 @@ export default function StudentList() {
                 新規追加
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>受講生を追加</DialogTitle>
               </DialogHeader>
@@ -160,12 +179,20 @@ export default function StudentList() {
                   <Input id="name" name="name" required />
                 </div>
                 <div>
-                  <Label htmlFor="startDate">開始日 *</Label>
+                  <Label htmlFor="startDate">受講開始日 *</Label>
                   <Input id="startDate" name="startDate" type="date" required />
                 </div>
                 <div>
                   <Label htmlFor="endDate">終了予定日</Label>
                   <Input id="endDate" name="endDate" type="date" />
+                </div>
+                <div>
+                  <Label htmlFor="supportDeadline">サポート期限</Label>
+                  <Input id="supportDeadline" name="supportDeadline" type="date" />
+                </div>
+                <div>
+                  <Label htmlFor="guaranteeDeadline">保証期限</Label>
+                  <Input id="guaranteeDeadline" name="guaranteeDeadline" type="date" />
                 </div>
                 <div>
                   <Label htmlFor="memo">メモ</Label>
@@ -196,16 +223,30 @@ export default function StudentList() {
                 <CardContent className="pt-6">
                   <div onClick={() => setLocation(`/students/${student.id}`)} className="mb-4">
                     <h3 className="text-lg font-semibold mb-2">{student.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>開始: {String(student.startDate)}</span>
-                    </div>
-                    {student.endDate && (
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>終了予定: {String(student.endDate)}</span>
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <span>開始: {formatDateJP(String(student.startDate))}</span>
                       </div>
-                    )}
+                      {student.endDate && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <span>終了予定: {formatDateJP(String(student.endDate))}</span>
+                        </div>
+                      )}
+                      {student.supportDeadline && (
+                        <div className="flex items-center gap-2 text-sm text-blue-600">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <span>サポート期限: {formatDateJP(String(student.supportDeadline))}</span>
+                        </div>
+                      )}
+                      {student.guaranteeDeadline && (
+                        <div className="flex items-center gap-2 text-sm text-purple-600">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <span>保証期限: {formatDateJP(String(student.guaranteeDeadline))}</span>
+                        </div>
+                      )}
+                    </div>
                     {student.memo && (
                       <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{student.memo}</p>
                     )}
@@ -255,7 +296,7 @@ export default function StudentList() {
 
       {/* 編集ダイアログ */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>受講生情報を編集</DialogTitle>
           </DialogHeader>
@@ -266,12 +307,20 @@ export default function StudentList() {
                 <Input id="edit-name" name="name" defaultValue={editingStudent.name} required />
               </div>
               <div>
-                <Label htmlFor="edit-startDate">開始日 *</Label>
-                <Input id="edit-startDate" name="startDate" type="date" defaultValue={editingStudent.startDate} required />
+                <Label htmlFor="edit-startDate">受講開始日 *</Label>
+                <Input id="edit-startDate" name="startDate" type="date" defaultValue={String(editingStudent.startDate).slice(0, 10)} required />
               </div>
               <div>
                 <Label htmlFor="edit-endDate">終了予定日</Label>
-                <Input id="edit-endDate" name="endDate" type="date" defaultValue={editingStudent.endDate || ""} />
+                <Input id="edit-endDate" name="endDate" type="date" defaultValue={editingStudent.endDate ? String(editingStudent.endDate).slice(0, 10) : ""} />
+              </div>
+              <div>
+                <Label htmlFor="edit-supportDeadline">サポート期限</Label>
+                <Input id="edit-supportDeadline" name="supportDeadline" type="date" defaultValue={editingStudent.supportDeadline ? String(editingStudent.supportDeadline).slice(0, 10) : ""} />
+              </div>
+              <div>
+                <Label htmlFor="edit-guaranteeDeadline">保証期限</Label>
+                <Input id="edit-guaranteeDeadline" name="guaranteeDeadline" type="date" defaultValue={editingStudent.guaranteeDeadline ? String(editingStudent.guaranteeDeadline).slice(0, 10) : ""} />
               </div>
               <div>
                 <Label htmlFor="edit-memo">メモ</Label>

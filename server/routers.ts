@@ -35,6 +35,8 @@ export const appRouter = router({
         name: z.string(),
         startDate: z.string(),
         endDate: z.string().optional(),
+        supportDeadline: z.string().optional(),
+        guaranteeDeadline: z.string().optional(),
         memo: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
@@ -42,6 +44,8 @@ export const appRouter = router({
           ...input,
           startDate: input.startDate,
           endDate: input.endDate || null,
+          supportDeadline: input.supportDeadline || null,
+          guaranteeDeadline: input.guaranteeDeadline || null,
         };
         const id = await db.createStudent(data as any);
         return { id };
@@ -53,6 +57,8 @@ export const appRouter = router({
         name: z.string().optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
+        supportDeadline: z.string().optional(),
+        guaranteeDeadline: z.string().optional(),
         memo: z.string().optional(),
       }))
       .mutation(async ({ input }) => {

@@ -26,6 +26,8 @@ export const students = mysqlTable("students", {
   name: varchar("name", { length: 255 }).notNull(),
   startDate: date("startDate").notNull(),
   endDate: date("endDate"),
+  supportDeadline: date("supportDeadline"),
+  guaranteeDeadline: date("guaranteeDeadline"),
   memo: text("memo"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

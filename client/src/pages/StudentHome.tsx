@@ -15,6 +15,19 @@ import { StudentTimeline } from "@/components/StudentTimeline";
 import { format, startOfWeek, parseISO } from "date-fns";
 import { ja } from "date-fns/locale";
 
+// 日付を「〇〇年〇〇月〇〇日」形式に変換するヘルパー
+function formatDateJP(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const str = String(dateStr);
+  const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[1]}年${parseInt(match[2])}月${parseInt(match[3])}日`;
+  }
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
 export default function StudentHome() {
   const [, setLocation] = useLocation();
   const params = useParams();
@@ -254,12 +267,24 @@ export default function StudentHome() {
             <div className="grid gap-2 text-sm">
               <div className="flex gap-2">
                 <span className="text-muted-foreground">開始日:</span>
-                <span>{String(student.startDate)}</span>
+                <span>{formatDateJP(String(student.startDate))}</span>
               </div>
               {student.endDate && (
                 <div className="flex gap-2">
                   <span className="text-muted-foreground">終了予定日:</span>
-                  <span>{String(student.endDate)}</span>
+                  <span>{formatDateJP(String(student.endDate))}</span>
+                </div>
+              )}
+              {(student as any).supportDeadline && (
+                <div className="flex gap-2">
+                  <span className="text-blue-600 font-medium">サポート期限:</span>
+                  <span className="text-blue-600">{formatDateJP(String((student as any).supportDeadline))}</span>
+                </div>
+              )}
+              {(student as any).guaranteeDeadline && (
+                <div className="flex gap-2">
+                  <span className="text-purple-600 font-medium">保証期限:</span>
+                  <span className="text-purple-600">{formatDateJP(String((student as any).guaranteeDeadline))}</span>
                 </div>
               )}
               {student.memo && (
@@ -333,7 +358,7 @@ export default function StudentHome() {
                     <div key={session.id} className="border rounded-lg p-3">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
-                          <div className="text-sm font-semibold">{String(session.sessionDate)}</div>
+                          <div className="text-sm font-semibold">{formatDateJP(String(session.sessionDate))}</div>
                           {session.theme && <div className="text-sm text-muted-foreground">{session.theme}</div>}
                         </div>
                         <Button
